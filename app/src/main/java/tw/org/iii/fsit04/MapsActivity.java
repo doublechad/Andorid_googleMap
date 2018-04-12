@@ -53,6 +53,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker[] marker;
     private HashMap<String,Object>[] destinations;
     private StreetViewPanorama streetViewPanorama;
+    private MyDragView dragView;
+    private ArrayList<HashMap<String,String>> data;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,11 +63,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        StreetViewPanoramaFragment streetViewPanoramaFragment =
-                (StreetViewPanoramaFragment) getFragmentManager()
-                        .findFragmentById(R.id.streetviewpanorama);
-        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
-
+//        StreetViewPanoramaFragment streetViewPanoramaFragment =
+//                (StreetViewPanoramaFragment) getFragmentManager()
+//                        .findFragmentById(R.id.streetviewpanorama);
+//        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+        dragView =findViewById(R.id.myDragView);
+        data = dragView.getDataList();
 
         wayPoints = new ArrayList<>();
 //        mapHandler= new MapHandler();
@@ -123,7 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public boolean onMarkerClick(Marker marker) {
             LatLng l1 =marker.getPosition();
-            streetViewPanorama.setPosition(l1);
+//            streetViewPanorama.setPosition(l1);
             Log.v("chad",l1.latitude+" : "+l1.longitude);
             return false;
         }
