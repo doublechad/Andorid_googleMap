@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,7 +46,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private ArrayList<WayPoint> wayPoints;
     private ArrayList<HashMap<String,ArrayList<LatLng>>> ways;
-//    private MapHandler mapHandler;
     private final PatternItem DOT = new Dot();
     private final PatternItem DASH = new Dash(10.0f);
     private final PatternItem GAP = new Gap(10.0f);
@@ -54,6 +54,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private HashMap<String,Object>[] destinations;
     private StreetViewPanorama streetViewPanorama;
     private MyDragView dragView;
+    private MyListView listView;
     private ArrayList<HashMap<String,String>> data;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +70,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
         dragView =findViewById(R.id.myDragView);
         data = dragView.getDataList();
+
+        listView =dragView.getListView();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v("chad",position+"");
+            }
+        });
+
 
         wayPoints = new ArrayList<>();
 //        mapHandler= new MapHandler();

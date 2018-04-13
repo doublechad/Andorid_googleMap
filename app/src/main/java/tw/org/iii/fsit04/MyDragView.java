@@ -27,9 +27,10 @@ public class MyDragView extends LinearLayout{
     private MyListView listView;
     private View myView;
     private ArrayList<HashMap<String,String>> data;
-    private float handInt;
+    private float handInt,rowInt;
     private SimpleAdapter simpleAdapter;
     private TextView tv;
+    private int upOrdown;
     public MyDragView(Context context){
         super(context);
 
@@ -103,7 +104,32 @@ public class MyDragView extends LinearLayout{
         return false;
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
 
+        float xxx =rowInt-event.getRawY();
+        float moveDiatance =this.getY()-xxx;
+        this.setY(moveDiatance);
+        if(xxx>0){
+            upOrdown =0;
+        }else if(xxx<0){
+            upOrdown =1;
+        }
+        if(event.getAction()==MotionEvent.ACTION_UP) {
+            if(upOrdown==1){
+                Log.v("chad","movedown");
+                this.setY(1960-600);
+                upOrdown=2;
+
+            }else if (upOrdown==0){
+                Log.v("chad","moveup");
+                this.setY(0);
+                upOrdown=2;
+            }
+        }
+        rowInt = event.getRawY();
+        return super.onTouchEvent(event);
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -111,20 +137,21 @@ public class MyDragView extends LinearLayout{
 
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             handInt =ev.getY();
-            Log.v("chad", "handInt");
+            rowInt =ev.getRawY();
+
         } else if (ev.getAction() == MotionEvent.ACTION_MOVE) {
 
                 float temp = handInt - ev.getY();
                 //向上
                 if (temp >20 ) {
                     if(this.getY()!=0&&isFirstItemVisible()) {
-                        this.setY(0);
+//                        upOrdown=0;
                         return  true;
                     }
                 //向下
                 } else if (temp < -20) {
                     if(this.getY()==0&&isFirstItemVisible()) {
-                        this.setY(1960-600);
+//                        upOrdown=1;
                         return  true;
                     }
                 }

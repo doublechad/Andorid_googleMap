@@ -20,12 +20,6 @@
             android:layout_height="0dp"
             tools:context="tw.org.iii.fsit04.MapsActivity"
             android:layout_weight="5"/>
-    <!--    <fragment
-            android:name="com.google.android.gms.maps.StreetViewPanoramaFragment"
-            android:id="@+id/streetviewpanorama"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="5"/> -->
 
     </LinearLayout>
     <tw.org.iii.fsit04.MyDragView
