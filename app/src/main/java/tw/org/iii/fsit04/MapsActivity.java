@@ -1,5 +1,6 @@
 package tw.org.iii.fsit04;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Handler;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.SimpleAdapter;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,21 +43,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,OnStreetViewPanoramaReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback  {
 
     private GoogleMap mMap;
+    /*這些是原本要畫路徑的
     private ArrayList<WayPoint> wayPoints;
     private ArrayList<HashMap<String,ArrayList<LatLng>>> ways;
     private final PatternItem DOT = new Dot();
     private final PatternItem DASH = new Dash(10.0f);
     private final PatternItem GAP = new Gap(10.0f);
     private final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DOT);
+    */
+
     private Marker[] marker;
-    private HashMap<String,Object>[] destinations;
-    private StreetViewPanorama streetViewPanorama;
+    private ArrayList<HashMap<String,Object>> destinations;
     private MyDragView dragView;
     private MyListView listView;
     private ArrayList<HashMap<String,String>> data;
+    private SimpleAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,80 +69,79 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-//        StreetViewPanoramaFragment streetViewPanoramaFragment =
-//                (StreetViewPanoramaFragment) getFragmentManager()
-//                        .findFragmentById(R.id.streetviewpanorama);
-//        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+        //TODO 從intent拿到資料後把要呈現的資料加入到  destinations是要畫標記的陣列  跟  data是LISTVIEW要呈現的資料
+        Intent intent =getIntent();
+
+        getDragViewAndSetListView();
+
+        destinations = new ArrayList<>();
+        //這是範例
+        HashMap<String,Object> m1 = new HashMap<>();
+        m1.put("lat",new LatLng(25.047155,121.514465));
+        m1.put("position","臺北");
+        destinations.add(m1);
+        HashMap<String,Object> m2 = new HashMap<>();
+        m2.put("lat",new LatLng(25.171855,121.440422));
+        m2.put("position","淡水");
+        destinations.add(m2);
+        //把資料加到ListView
+        for(HashMap<String,Object> hm : destinations){
+            HashMap<String,String> listItem = new HashMap<>();
+            listItem.put("title",destinations.indexOf(hm)+"");
+            listItem.put("texts",hm.get("position").toString());
+            data.add(listItem);
+        }
+        adapter.notifyDataSetChanged();
+        marker = new Marker[destinations.size()];
+
+    }
+    //找出DragView 跟他裡面的ListView
+    private  void getDragViewAndSetListView(){
         dragView =findViewById(R.id.myDragView);
         data = dragView.getDataList();
-
         listView =dragView.getListView();
+        adapter=dragView.getSimpleAdapter();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.v("chad",position+"");
             }
         });
-
-
-        wayPoints = new ArrayList<>();
-//        mapHandler= new MapHandler();
-        ways =new ArrayList<>();
-        HashMap<String,Object> m1 = new HashMap<>();
-        m1.put("lat",new LatLng(25.047155,121.514465));
-        m1.put("postion","臺北");
-        HashMap<String,Object> m2 = new HashMap<>();
-        m2.put("lat",new LatLng(25.171855,121.440422));
-        m2.put("postion","淡水");
-        destinations = new HashMap[]{m1, m2};
-        marker = new Marker[destinations.length];
-
     }
-
-
+    //地圖加載完成調用會傳入一個GoogleMap
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        // Add a marker in Sydney and move the camera
+        //這個經緯度是預設視角的位置
         LatLng taipei = new LatLng(25.047155, 121.514465);
-//        LatLng sea =new LatLng(25.171855,121.440422);
 
-//        MarkerOptions m1 =new MarkerOptions().position(taipei).title("Marker in taipei")
-//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow));
-//        marker =mMap.addMarker(m1);
-        LatLng ds =new LatLng(25.171855,121.440422);
         for(HashMap<String,Object> hm : destinations){
-            MarkerOptions m2 =new MarkerOptions().position((LatLng) hm.get("lat")).title(hm.get("postion").toString());
+            MarkerOptions m2 =new MarkerOptions().position((LatLng) hm.get("lat")).title(hm.get("position").toString());
             mMap.addMarker(m2).showInfoWindow();
 
         }
-        GroundOverlayOptions newarkMap = new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.drawable.ds))
-                .position(ds, 8600f, 6500f);
-        mMap.addGroundOverlay(newarkMap);
+
+        //移動視角到哪個經緯度
         mMap.moveCamera(CameraUpdateFactory.newLatLng(taipei));
+        //設定視角的大小程度
         mMap.moveCamera(CameraUpdateFactory.zoomTo(10.0f));
+        //設定MarkClickListener
         mMap.setOnMarkerClickListener(new MyOnMarkerClickListener());
 
     }
-    //街景回傳
-    @Override
-    public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
-        this.streetViewPanorama=streetViewPanorama;
-        streetViewPanorama.setPosition(new LatLng(25.137077, 121.508447));
+    //在地圖上載入圖片
+    private void addImg(){
+        LatLng postion =new LatLng(25.171855,121.440422);
+        GroundOverlayOptions imgOnMap = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.ds))
+                .position(postion, 8600f, 6500f);
+        mMap.addGroundOverlay(imgOnMap);
     }
-
-    public void test2(View view) {
-
-
-    }
+    //標記的clickListener
     private class MyOnMarkerClickListener implements GoogleMap.OnMarkerClickListener{
-
         @Override
         public boolean onMarkerClick(Marker marker) {
             LatLng l1 =marker.getPosition();
-//            streetViewPanorama.setPosition(l1);
-            Log.v("chad",l1.latitude+" : "+l1.longitude);
             return false;
         }
     }
@@ -296,6 +300,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        }
 //    }
 }
+//原本是用在路徑上面
 class WayPoint{
     String notify;
     Double lat;

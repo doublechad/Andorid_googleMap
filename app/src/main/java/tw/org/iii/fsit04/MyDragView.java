@@ -23,13 +23,11 @@ import java.util.HashMap;
  */
 
 public class MyDragView extends LinearLayout{
-    private int actionBarHeight, vHeight;
     private MyListView listView;
     private View myView;
     private ArrayList<HashMap<String,String>> data;
     private float handInt,rowInt;
     private SimpleAdapter simpleAdapter;
-    private TextView tv;
     private int upOrdown;
     public MyDragView(Context context){
         super(context);
@@ -38,35 +36,34 @@ public class MyDragView extends LinearLayout{
     public MyDragView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         data = new ArrayList<>();
-        for(int i=0;i<20;i++){
-            HashMap<String,String> m1 =new HashMap<>();
-            m1.put("title",i+"");
-            m1.put("texts","abc "+i);
-            data.add(m1);
-        }
+//        for(int i=0;i<20;i++){
+//            HashMap<String,String> m1 =new HashMap<>();
+//            m1.put("title",i+"");
+//            m1.put("texts","abc "+i);
+//            data.add(m1);
+//        }
+        //利用mInflater 載入DragView的XML檔案
         LayoutInflater mInflater = LayoutInflater.from(context);
         myView = mInflater.inflate(R.layout.dragview, null);
+
         addView(myView);
-        //取得螢幕寬高
-        DisplayMetrics dm = new DisplayMetrics();
-        Activity a1 =(Activity)context;
-        a1.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int vWidth = dm.widthPixels;
-        vHeight= dm.heightPixels;
-        Log.v("chad",vHeight+"");
         intitListView();
 
 
     }
+    //返回 ListView 的資料
     public ArrayList<HashMap<String,String>> getDataList(){
         return data;
     }
+    //返回 ListView 的Adapter
     public SimpleAdapter getSimpleAdapter(){
         return simpleAdapter;
     }
+    //返回 MyListView
     public MyListView getListView(){
         return listView;
     }
+    //初始化MyListView
     private void intitListView(){
         String[] from =new String[]{"title","texts"};
         int[] to =new int[]{R.id.title,R.id.texts};
@@ -77,11 +74,10 @@ public class MyDragView extends LinearLayout{
     }
 
 
-
+    //DragView 布局的時候 先設定初始位置0;
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-
         this.setY(0);
 
     }
@@ -103,13 +99,15 @@ public class MyDragView extends LinearLayout{
         }
         return false;
     }
-
+    //處理滑動時候DragView的效果
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         float xxx =rowInt-event.getRawY();
         float moveDiatance =this.getY()-xxx;
-        this.setY(moveDiatance);
+        if(moveDiatance>0&&moveDiatance<1960-600) {
+            this.setY(moveDiatance);
+        }
         if(xxx>0){
             upOrdown =0;
         }else if(xxx<0){
@@ -130,32 +128,26 @@ public class MyDragView extends LinearLayout{
         rowInt = event.getRawY();
         return super.onTouchEvent(event);
     }
-
+    //攔截滑動手勢
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-
-
+        //ACTION_DOWN的時候先記錄 Y 跟RAWY 判斷 移動多少跟向上向下
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             handInt =ev.getY();
             rowInt =ev.getRawY();
-
         } else if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-
                 float temp = handInt - ev.getY();
-                //向上
+                //向上差過20 而且LISTVIEW置頂代表ACTION_MOVE_UP return true 給onTouchEvent;
                 if (temp >20 ) {
                     if(this.getY()!=0&&isFirstItemVisible()) {
-//                        upOrdown=0;
                         return  true;
                     }
-                //向下
+                //向下差過20 而且LISTVIEW置頂代表ACTION_MOVE_Down return true 給onTouchEvent;
                 } else if (temp < -20) {
                     if(this.getY()==0&&isFirstItemVisible()) {
-//                        upOrdown=1;
                         return  true;
                     }
                 }
-
 
             return false;
         }
